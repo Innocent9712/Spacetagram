@@ -1,38 +1,17 @@
 import { useState, useEffect } from 'react';
 import Card from "../src/components/Card"
 import './App.css';
-import image1 from "./assets/pexels-pixabay-220201.jpg"
 import Loading from './components/Loading';
-// console.log(process.env.REACT_APP_MY_API_KEY);
 
 function App() {
   const [gallery, setGallery] = useState(undefined)
   const [favorites, setFavorites] = useState([undefined])
-  const [showGallery, setShowGallery] = useState("all")
-  const favArr = () => {
-    let newArr = []
-    for (let i = 0; i < favorites.length; i++) {
-      for (let j = 0; j < gallery.length; j++) {
-        if (favorites[i] === gallery[j].id) {
-          newArr.push(gallery[i])
-        }
-        
-      }
-      return newArr
-      
-    }
-  }
-
-  let currentPage = showGallery === "all" ? gallery : favArr()
   const [start, setStart] = useState(0)
   const [end, setEnd] = useState(10)
   const [pageNum, setPageNum] = useState(1)
   const nasaEndpoint = 'https://api.nasa.gov/planetary/apod?start_date=2021-11-25&end_date=2022-01-05&api_key=';
-  // const apiKey =  "ChlAw8Gjh9CO853FohjidSgiSrKQMd1VdaRIiVkR";
   const apiKey =  process.env.REACT_APP_MY_API_KEY;
   const localStorageValue = "favPics43"
-
-  // https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=DEMO_KEY
   
 
   // Handle functionality for an like and unlike action
@@ -79,15 +58,13 @@ function App() {
    setGallery(newArr)
   }
 
-  const display = (value) => {
-      setShowGallery(value)
-  }
 
   // generate mock likes
   const randomNum = (min, max) => {
     return Math.trunc(Math.random() * (max - min) + min)
   }
 
+  // functionality for page navigation
   const handleNav = (value) => {
     if (value === "back") {
       setStart(prevState => prevState - 10)
@@ -96,6 +73,7 @@ function App() {
       } else {
         setEnd(prevState => prevState - 10)        
       }
+      setPageNum(prevState  => prevState - 1)
     } else {
       setStart(prevState => prevState + 10)
       if (gallery.length - end < 10) {
@@ -103,13 +81,10 @@ function App() {
       } else {
         setEnd(prevState => prevState + 10)   
       }
+      setPageNum(prevState  => prevState + 1)
+
     }
   }
-
-  useEffect(() => {
-    // localStorage.setItem(localStorageValue, JSON.stringify(favorites))
-    
-  }, [favorites])
 
   // Get data from localStorage and update app favorite state
   useEffect(() => {

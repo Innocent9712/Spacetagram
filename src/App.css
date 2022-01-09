@@ -61,7 +61,7 @@
   }
 
   .gallery ul li {
-    @apply basis-auto md:basis-1/3 my-5 min-h-max;
+    @apply basis-full md:basis-1/3 my-5 min-h-max;
   }
 
   .gallery_subheading {
