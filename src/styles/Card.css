@@ -1,0 +1,53 @@
+@tailwind components;
+
+@layer components {
+    .figure {
+        @apply container flex flex-col mb-8 shadow-lg mx-auto shadow-gray-400/40 hover:cursor-pointer;
+        min-height: 4rem;
+    }
+
+    .figure > div {
+        @apply opacity-70 px-3 py-4  flex flex-row items-center justify-between;
+    }
+
+    .figure div div {
+        @apply flex flex-row items-center;
+    }
+
+    .figure div div p {
+        @apply text-sm;
+    }
+
+    .figure figcaption {
+        @apply bg-white opacity-80 w-full py-2 pl-3;
+        bottom: 4rem;
+    }
+
+    .figure figcaption h4 {
+        @apply text-lg
+    }
+
+    .figure figcaption p {
+        @apply text-gray-600 text-xs;
+    }
+
+    .image {
+        /* @apply h-96; */
+    }
+
+    .people {
+        @apply w-7 mr-2;
+    }
+
+    .heart {
+        @apply w-5 mr-2;
+    }
+
+    .like_button {
+        @apply bg-slate-200 flex flex-row px-2 py-1 rounded-md items-center; 
+    }
+
+    .like {
+        @apply border-2 border-red-600;
+    }
+}
