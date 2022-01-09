@@ -7,33 +7,42 @@ import Loading from './components/Loading';
 
 function App() {
   const [gallery, setGallery] = useState(undefined)
-  const [testCard, setTestCard] = useState(undefined)
   const [favorites, setFavorites] = useState([undefined])
+  const [showGallery, setShowGallery] = useState("all")
+  const favArr = () => {
+    let newArr = []
+    for (let i = 0; i < favorites.length; i++) {
+      for (let j = 0; j < gallery.length; j++) {
+        if (favorites[i] === gallery[j].id) {
+          newArr.push(gallery[i])
+        }
+        
+      }
+      return newArr
+      
+    }
+  }
+
+  let currentPage = showGallery === "all" ? gallery : favArr()
   const [start, setStart] = useState(0)
   const [end, setEnd] = useState(10)
-  const [showGallery, setShowGallery] = useState("all")
   const [pageNum, setPageNum] = useState(1)
-  const [like, setLike] = useState(false)
-  const nasaEndpoint = 'https://api.nasa.gov/planetary/apod?start_date=2021-12-25&end_date=2022-01-05&api_key=';
+  const nasaEndpoint = 'https://api.nasa.gov/planetary/apod?start_date=2021-11-25&end_date=2022-01-05&api_key=';
   // const apiKey =  "ChlAw8Gjh9CO853FohjidSgiSrKQMd1VdaRIiVkR";
   const apiKey =  process.env.REACT_APP_MY_API_KEY;
   const localStorageValue = "favPics43"
 
   // https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=DEMO_KEY
   
-  const newObj = {
-    id: "lorem dolor sit",
-    title: "lorem dolor sit",
-    date: "2021-21-13",
-    img: image1
 
-  }
-
+  // Handle functionality for an like and unlike action
   const handleLike = (value) => {
     const myVal = value
     if (favorites.length === 0) {
       setFavorites([myVal])
+      modifyLikes(myVal,"add")
       localStorage.setItem(localStorageValue, JSON.stringify(favorites))
+      
     }   else if (favorites.length > 0 && !favorites.includes(myVal)) {
       setFavorites(prevState => (
         [
@@ -42,18 +51,59 @@ function App() {
         ]
       ))
       localStorage.setItem(localStorageValue, JSON.stringify(favorites))
+      modifyLikes(myVal,"add")
     } else if (favorites.includes(myVal)) {
       setFavorites(prevState => (
         prevState.filter(item => item !== myVal)
       ))
       localStorage.setItem(localStorageValue, JSON.stringify(favorites))
+      modifyLikes(myVal,"subtract")
     }
     console.log(favorites);
     console.log(value);
   }
 
+  // modify number of likes
+  const modifyLikes = (value, operation) => {
+    const newArr = gallery
+
+    for (let index = 0; index < newArr.length; index++) {
+      if (newArr[index].id === value) {
+        if (operation === "add") {
+          newArr[index].likes += 1
+        } else {
+          newArr[index].likes -= 1        
+        }
+      }  
+    }
+   setGallery(newArr)
+  }
+
   const display = (value) => {
-    setShowGallery(value)
+      setShowGallery(value)
+  }
+
+  // generate mock likes
+  const randomNum = (min, max) => {
+    return Math.trunc(Math.random() * (max - min) + min)
+  }
+
+  const handleNav = (value) => {
+    if (value === "back") {
+      setStart(prevState => prevState - 10)
+      if (end === gallery.length) {
+        setEnd(prevState => prevState - prevState % 10)
+      } else {
+        setEnd(prevState => prevState - 10)        
+      }
+    } else {
+      setStart(prevState => prevState + 10)
+      if (gallery.length - end < 10) {
+        setEnd(prevState => prevState + (gallery.length - prevState))
+      } else {
+        setEnd(prevState => prevState + 10)   
+      }
+    }
   }
 
   useEffect(() => {
@@ -61,6 +111,7 @@ function App() {
     
   }, [favorites])
 
+  // Get data from localStorage and update app favorite state
   useEffect(() => {
     let tempStore = localStorage.getItem(localStorageValue)
     if (tempStore) {
@@ -70,10 +121,10 @@ function App() {
     }
 
     setFavorites(tempStore)
-    console.log(favorites);
 
   }, [])
 
+  // Fetch data from nasa's api and populate the app's local gallery state
   useEffect(() => {
     function fetchData (){
       try{
@@ -86,10 +137,10 @@ function App() {
               title: item.title,
               date: item.date,
               img: item.url,
-              description: item.description
+              description: item.description,
+              likes: randomNum(100, 400)
           }))
           setGallery(newArr)
-          // setTestCard(newArr[0])
         })
       }catch(error){
         console.log(error)
@@ -98,22 +149,6 @@ function App() {
     fetchData()
   }, [])
 
-  const isAFavorite = (value) => {
-    let check = undefined
-    for (let index = 0; index < favorites.length; index++) {
-      if (value === favorites[0]) {
-        check = true
-      } else {
-        check = false
-      }
-      
-    }
-
-    return check;
-  }
-  console.log(gallery);
-  console.log(testCard);
-
   return (
     <div className="App">
      <header className="header">
@@ -121,7 +156,6 @@ function App() {
         <h2>Spacetagram</h2>
        </div>
      </header>
-     {/* <Loading /> */}
      <main className="main">
       <section className="intro">
         <h4>
@@ -132,69 +166,31 @@ function App() {
       <section className="gallery">
         <div className="gallery_subheading">
           <h3>Gallery</h3>
-          <div>
-            <button onClick={()=>display("all")}>all</button>
-            <button onClick={()=>display("favorite")}>favorite</button>
-          </div>
         </div>
         {
           gallery !== undefined? (
             <div>
               <ul>
                 {
-                  gallery.map(item => (
+                  gallery.slice(start,end).map(item => (
                     <li key = {item.id}>
                        <Card 
                         img={item.img}
                         title={item.title}
                         altText={item.title}
                         date={item.date}
-                        likeNumber={123}
+                        likeNumber={item.likes}
                         favorite={favorites.includes(item.id) ? true : false}
                         handleLike={()=>handleLike(item.id)}
                       />
                     </li>
                   ))
                 }
-
-                {/* <li>
-                  <Card 
-                  img={newObj.img}
-                  title={newObj.title}
-                  altText={newObj.title}
-                  date={newObj.date}
-                  likeNumber={123}
-                  favorite={like ? true : false}
-                  handleLike={handleLike}
-                  />
-                </li>
-                <li>
-                  <Card 
-                  img={newObj.img}
-                  title={newObj.title}
-                  altText={newObj.title}
-                  date={newObj.date}
-                  likeNumber={123}
-                  favorite={like ? true : false}
-                  handleLike={handleLike}
-                  />
-                </li>
-                <li>
-                  <Card 
-                  img={newObj.img}
-                  title={newObj.title}
-                  altText={newObj.title}
-                  date={newObj.date}
-                  likeNumber={123}
-                  favorite={like ? true : false}
-                  handleLike={handleLike}
-                  />
-                </li> */}
               </ul>
               <div className="page_nav">
-                <button>prev</button>
+                <button className={`${start === 0 ? "hide" : undefined}`} onClick={()=>handleNav("back")}>prev</button>
                 <p>{`page ${pageNum}`}</p>
-                <button>next</button>
+                <button className={`${end === gallery.length ? "hide" : undefined}`} onClick={()=>handleNav("forward")}>next</button>
               </div>
             </div>
           ) : (

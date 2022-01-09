@@ -5,6 +5,11 @@
 
 }
 
+.hide {
+  visibility: hidden;
+}
+
+
 @layer components {
   .App {
     @apply bg-white;
@@ -67,10 +72,13 @@
     @apply flex flex-col;
   }
 
-  .gallery_subheading div button {
+  .option_btn {
     @apply bg-neutral-200 text-sm m-0.5 p-2
   }
 
+  .highlight {
+    @apply bg-neutral-400;
+  }
   .page_nav {
     @apply w-10/12 mx-auto flex flex-row justify-between py-6 items-center;
   }
